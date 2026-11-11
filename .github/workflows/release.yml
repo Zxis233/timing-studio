@@ -1,0 +1,32 @@
+name: 构建静态文件并发布 Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: taiki-e/install-action@wasm-pack
+      - run: npm ci
+      - run: npm run build
+      - name: 打包静态文件
+        run: cd dist && zip -r ../timing-studio-static.zip .
+      - name: 创建 Release
+        run: gh release create "$RELEASE_TAG" timing-studio-static.zip --verify-tag --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}

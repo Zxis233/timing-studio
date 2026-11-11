@@ -112,4 +112,15 @@ markers:
 
 - [持续集成](.github/workflows/ci.yml) 在推送到 `main` 或创建 Pull Request 时运行 Rust 格式检查与单元测试、WASM/TypeScript/前端构建和 Chromium 端到端测试。
 - [GitHub Pages 发布](.github/workflows/pages.yml) 在 `main` 更新后构建静态资源并部署到 GitHub Pages，也支持在 Actions 页面手动触发。
-- 两个 workflow 分离运行：CI 负责质量门禁，Pages workflow 只负责构建和发布，失败时可以分别定位。
+- [Release 构建](.github/workflows/release.yml) 在推送 `v` 开头的标签时，构建根路径版本并创建 GitHub Release，附带 `timing-studio-static.zip`。
+
+### 通过 GitHub 构建 Cloudflare Pages 静态文件
+
+先将构建工作流及需要发布的代码提交并推送，然后在该提交上创建并推送一个新标签：
+
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+在 GitHub 仓库的 Actions 页面查看“构建静态文件并发布 Release”。成功后，从 Releases 下载 `timing-studio-static.zip`，解压并将其中全部文件上传到 Cloudflare Pages；`index.html` 应位于上传目录的根部。每次发布使用新的标签。该工作流使用普通生产构建，资源路径为 `/`，适合站点根路径部署。
